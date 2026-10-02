@@ -1,0 +1,1596 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CineVault • Movie Poster Gallery</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Google Fonts: Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap" rel="stylesheet">
+  <!-- Font Awesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              50: '#ecfdf5',
+              100: '#d1fae5',
+              200: '#a7f3d0',
+              300: '#6ee7b7',
+              400: '#34d399',
+              500: '#10b981', // Emerald green
+              600: '#059669', // Primary green
+              700: '#047857',
+              800: '#065f46',
+              900: '#064e3b',
+              950: '#022c22',
+            }
+          },
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+            display: ['"Plus Jakarta Sans"', 'Inter', 'sans-serif'],
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    body {
+      font-family: 'Inter', sans-serif;
+      background-color: #f8fafc;
+      color: #1e293b;
+    }
+    
+    /* Smooth Transitions */
+    .smooth-transition {
+      transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    
+    /* Custom Scrollbar */
+    ::-webkit-scrollbar {
+      width: 8px;
+      height: 8px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #f1f5f9;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #10b981;
+      border-radius: 9999px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #059669;
+    }
+
+    /* Poster Aspect Ratios */
+    .aspect-poster {
+      aspect-ratio: 2 / 3;
+    }
+    .aspect-square {
+      aspect-ratio: 1 / 1;
+    }
+    .aspect-cinema {
+      aspect-ratio: 16 / 9;
+    }
+
+    /* Poster Card Hover Elevation */
+    .poster-card {
+      transition: transform 0.28s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.28s ease;
+    }
+    .poster-card:hover {
+      transform: translateY(-6px);
+    }
+  </style>
+</head>
+
+<body class="bg-gradient-to-br from-white via-emerald-50/40 to-emerald-100/30 min-h-screen flex flex-col antialiased">
+
+  <!-- Top Navigation Header -->
+  <header class="sticky top-0 z-30 bg-white/90 backdrop-blur-md border-b border-emerald-100 shadow-sm">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3.5">
+      <div class="flex flex-col md:flex-row items-center justify-between gap-3">
+        
+        <!-- Logo and Title -->
+        <div class="flex items-center justify-between w-full md:w-auto">
+          <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-2xl bg-gradient-to-tr from-brand-700 via-brand-600 to-brand-400 flex items-center justify-center text-white shadow-md shadow-brand-500/25">
+              <i class="fa-solid fa-film text-lg"></i>
+            </div>
+            <div>
+              <div class="flex items-center gap-2">
+                <h1 class="font-display font-extrabold text-xl tracking-tight text-slate-900">
+                  Cine<span class="text-brand-600">Vault</span>
+                </h1>
+                <span class="text-[11px] font-semibold tracking-wider uppercase px-2 py-0.5 rounded-full bg-brand-100 text-brand-800 border border-brand-200">
+                  Gallery
+                </span>
+              </div>
+              <p class="text-xs text-slate-500 font-medium">Save & Curate Movie Posters</p>
+            </div>
+          </div>
+
+          <!-- Mobile Action Trigger Buttons -->
+          <div class="flex md:hidden items-center gap-2">
+            <button id="mobileCustomBtn" class="p-2 rounded-xl bg-slate-100 text-slate-600 hover:text-brand-700 hover:bg-brand-50 transition" title="Customization Settings">
+              <i class="fa-solid fa-sliders text-base"></i>
+            </button>
+            <button id="mobileAddBtn" class="px-3 py-2 rounded-xl bg-brand-600 text-white font-medium text-xs shadow-md shadow-brand-600/30 flex items-center gap-1.5 active:scale-95 transition">
+              <i class="fa-solid fa-plus"></i> Add
+            </button>
+          </div>
+        </div>
+
+        <!-- Live Poster Count Stats Bar -->
+        <div class="flex items-center flex-wrap gap-2 text-xs font-medium">
+          <div class="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-white border border-emerald-200/80 shadow-xs">
+            <span class="relative flex h-2.5 w-2.5">
+              <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-brand-400 opacity-75"></span>
+              <span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-brand-500"></span>
+            </span>
+            <span class="text-slate-500">Available Posters:</span>
+            <span id="totalPosterCount" class="font-display font-bold text-sm text-brand-700">0</span>
+          </div>
+
+          <div class="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-emerald-50/80 border border-emerald-200/60 text-emerald-900">
+            <i class="fa-regular fa-calendar-check text-brand-600"></i>
+            <span>Showing: <strong id="visiblePosterCount" class="font-semibold text-brand-800">0</strong></span>
+          </div>
+
+          <div class="hidden lg:flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white border border-slate-200 text-slate-600">
+            <i class="fa-solid fa-layer-group text-slate-400"></i>
+            <span>Genres: <strong id="totalGenresCount" class="font-semibold text-slate-800">0</strong></span>
+          </div>
+        </div>
+
+        <!-- Desktop Action Buttons -->
+        <div class="hidden md:flex items-center gap-2.5">
+          <!-- Customization Panel Trigger -->
+          <button id="openCustomModalBtn" class="flex items-center gap-2 px-3.5 py-2 rounded-xl border border-emerald-300 bg-emerald-50/60 text-brand-800 hover:bg-emerald-100 hover:border-emerald-400 text-xs font-semibold tracking-wide transition shadow-xs">
+            <i class="fa-solid fa-sliders text-brand-600"></i>
+            <span>Customize View</span>
+          </button>
+
+          <!-- Add Movie Poster Button -->
+          <button id="openAddModalBtn" class="flex items-center gap-2 px-4 py-2 rounded-xl bg-gradient-to-r from-brand-600 to-brand-500 hover:from-brand-700 hover:to-brand-600 text-white text-xs font-bold shadow-md shadow-brand-600/30 hover:shadow-lg hover:shadow-brand-600/40 active:scale-95 transition">
+            <i class="fa-solid fa-circle-plus text-sm"></i>
+            <span>Add New Movie</span>
+          </button>
+        </div>
+
+      </div>
+    </div>
+  </header>
+
+  <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6">
+    
+    <!-- Hero Banner with Stats & Quick Description -->
+    <div class="mb-6 bg-gradient-to-r from-brand-900 via-brand-800 to-emerald-900 text-white rounded-3xl p-6 sm:p-8 shadow-xl shadow-brand-950/15 relative overflow-hidden">
+      <!-- Decorative Backdrop Elements -->
+      <div class="absolute -right-10 -bottom-10 w-64 h-64 rounded-full bg-brand-500/10 blur-3xl pointer-events-none"></div>
+      <div class="absolute right-1/4 -top-12 w-48 h-48 rounded-full bg-emerald-400/10 blur-2xl pointer-events-none"></div>
+
+      <div class="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
+        <div class="max-w-xl">
+          <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-brand-700/60 border border-brand-500/30 text-emerald-200 text-xs font-medium mb-3 backdrop-blur-sm">
+            <i class="fa-solid fa-sparkles text-amber-300"></i> Smart Cinema Poster Organizer
+          </div>
+          <h2 class="font-display text-2xl sm:text-3xl font-extrabold tracking-tight text-white">
+            Curate Your Cinema Vault
+          </h2>
+          <p class="text-sm text-emerald-100/80 mt-1.5 leading-relaxed">
+            Organize titles, view high-res poster artworks, toggle uploaded dates anytime, and tweak gallery cards to your style.
+          </p>
+        </div>
+
+        <!-- Quick Summary Cards inside Hero -->
+        <div class="grid grid-cols-2 sm:grid-cols-3 gap-3 self-stretch md:self-auto">
+          <div class="bg-white/10 backdrop-blur-md border border-white/10 rounded-2xl p-3.5 text-center flex flex-col justify-center">
+            <span class="text-[10px] text-emerald-200 uppercase font-semibold tracking-wider">Total Posters</span>
+            <span id="heroPosterCount" class="font-display text-2xl font-black text-white mt-0.5">0</span>
+          </div>
+          <div class="bg-white/10 backdrop-blur-md border border-white/10 rounded-2xl p-3.5 text-center flex flex-col justify-center">
+            <span class="text-[10px] text-emerald-200 uppercase font-semibold tracking-wider">Date Mode</span>
+            <span id="heroDateModeStatus" class="font-semibold text-xs text-emerald-300 mt-1.5 flex items-center justify-center gap-1">
+              <i class="fa-solid fa-eye text-[11px]"></i> Visible
+            </span>
+          </div>
+          <div class="col-span-2 sm:col-span-1 bg-white/10 backdrop-blur-md border border-white/10 rounded-2xl p-3.5 text-center flex flex-col justify-center">
+            <span class="text-[10px] text-emerald-200 uppercase font-semibold tracking-wider">Quick Action</span>
+            <button onclick="openAddMovieModal()" class="mt-1 text-xs font-bold text-white bg-brand-500/80 hover:bg-brand-500 px-2 py-1 rounded-lg transition active:scale-95">
+              + Upload
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Filter, Search, and Sorting Bar -->
+    <div class="bg-white rounded-2xl border border-emerald-100 shadow-sm p-4 mb-6">
+      <div class="flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-4">
+        
+        <!-- Search Input -->
+        <div class="relative flex-1">
+          <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-sm"></i>
+          <input 
+            type="text" 
+            id="searchInput" 
+            placeholder="Search by movie title, director, or keyword..." 
+            class="w-full pl-10 pr-10 py-2.5 rounded-xl border border-slate-200 focus:border-brand-500 focus:ring-2 focus:ring-brand-200 text-sm outline-none transition bg-slate-50/50 focus:bg-white"
+          >
+          <button id="clearSearchBtn" class="hidden absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600">
+            <i class="fa-solid fa-xmark text-sm"></i>
+          </button>
+        </div>
+
+        <!-- Filter Controls -->
+        <div class="flex flex-wrap items-center gap-2.5">
+          <!-- Genre Selector -->
+          <div class="relative min-w-[130px]">
+            <select id="genreFilter" class="w-full appearance-none bg-white border border-slate-200 text-slate-700 text-xs font-medium rounded-xl px-3.5 py-2.5 pr-8 focus:border-brand-500 focus:ring-2 focus:ring-brand-200 outline-none cursor-pointer">
+              <option value="ALL">All Genres</option>
+              <!-- Dynamically Populated -->
+            </select>
+            <i class="fa-solid fa-chevron-down absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none text-xs"></i>
+          </div>
+
+          <!-- Sort Selector -->
+          <div class="relative min-w-[155px]">
+            <select id="sortFilter" class="w-full appearance-none bg-white border border-slate-200 text-slate-700 text-xs font-medium rounded-xl px-3.5 py-2.5 pr-8 focus:border-brand-500 focus:ring-2 focus:ring-brand-200 outline-none cursor-pointer">
+              <option value="uploaded_desc">Uploaded (Newest First)</option>
+              <option value="uploaded_asc">Uploaded (Oldest First)</option>
+              <option value="title_asc">Title (A to Z)</option>
+              <option value="title_desc">Title (Z to A)</option>
+              <option value="year_desc">Release Year (Newest)</option>
+              <option value="rating_desc">Highest Rating</option>
+            </select>
+            <i class="fa-solid fa-arrow-down-wide-short absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none text-xs"></i>
+          </div>
+
+          <!-- Quick Toggle for Upload Dates (Satisfies "neither with uploaded dates" vs "with dates") -->
+          <button id="quickDateToggleBtn" class="flex items-center gap-1.5 px-3 py-2.5 rounded-xl border border-emerald-200 bg-emerald-50/70 hover:bg-emerald-100 text-emerald-900 text-xs font-semibold transition" title="Toggle Upload Date Visibility">
+            <i id="quickDateIcon" class="fa-regular fa-calendar text-brand-600"></i>
+            <span id="quickDateText">Dates: On</span>
+          </button>
+
+          <!-- Reset Filter Button -->
+          <button id="resetFiltersBtn" class="p-2.5 rounded-xl border border-slate-200 hover:bg-slate-50 text-slate-600 transition" title="Reset Filters">
+            <i class="fa-solid fa-rotate text-xs"></i>
+          </button>
+        </div>
+
+      </div>
+
+      <!-- Quick Active Tag Chips -->
+      <div id="activeTagBar" class="hidden mt-3 pt-3 border-t border-slate-100 flex items-center gap-2 text-xs flex-wrap">
+        <span class="text-slate-400 font-medium">Active filters:</span>
+        <span id="activeFilterTags" class="flex flex-wrap gap-1.5"></span>
+      </div>
+    </div>
+
+    <!-- Gallery Section Header -->
+    <div class="flex items-center justify-between mb-4 px-1">
+      <div class="flex items-center gap-2">
+        <h3 class="font-display font-bold text-lg text-slate-900">Movie Poster Collection</h3>
+        <span id="galleryCounterBadge" class="text-xs font-semibold bg-emerald-100 text-emerald-800 px-2.5 py-0.5 rounded-full border border-emerald-200">
+          0 Posters
+        </span>
+      </div>
+
+      <!-- View Switcher -->
+      <div class="flex items-center bg-slate-100 p-1 rounded-xl border border-slate-200/80">
+        <button id="viewGridBtn" class="px-2.5 py-1 rounded-lg text-xs font-semibold bg-white text-slate-900 shadow-xs transition" title="Grid View">
+          <i class="fa-solid fa-grip"></i>
+        </button>
+        <button id="viewCompactBtn" class="px-2.5 py-1 rounded-lg text-xs font-semibold text-slate-500 hover:text-slate-900 transition" title="Compact View">
+          <i class="fa-solid fa-border-all"></i>
+        </button>
+        <button id="viewListBtn" class="px-2.5 py-1 rounded-lg text-xs font-semibold text-slate-500 hover:text-slate-900 transition" title="List View">
+          <i class="fa-solid fa-list"></i>
+        </button>
+      </div>
+    </div>
+
+    <!-- Empty State Container (Displayed when no items found) -->
+    <div id="emptyGalleryState" class="hidden bg-white border-2 border-dashed border-emerald-200 rounded-3xl p-12 text-center max-w-lg mx-auto my-8">
+      <div class="w-16 h-16 rounded-2xl bg-emerald-50 border border-emerald-100 text-brand-600 flex items-center justify-center text-2xl mx-auto mb-4">
+        <i class="fa-solid fa-film"></i>
+      </div>
+      <h4 class="font-display text-lg font-bold text-slate-800 mb-1">No Movie Posters Found</h4>
+      <p class="text-xs text-slate-500 mb-6 max-w-xs mx-auto">
+        No posters match your current search or filter query. Try clearing your filters or add a new movie poster.
+      </p>
+      <div class="flex items-center justify-center gap-3">
+        <button onclick="resetAllFilters()" class="px-4 py-2 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-xs font-semibold text-slate-700 transition">
+          Clear Filters
+        </button>
+        <button onclick="openAddMovieModal()" class="px-4 py-2 rounded-xl bg-brand-600 hover:bg-brand-700 text-xs font-bold text-white shadow-sm transition">
+          + Add New Poster
+        </button>
+      </div>
+    </div>
+
+    <!-- Main Dynamic Gallery Grid -->
+    <div id="movieGallery" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 sm:gap-6">
+      <!-- Dynamic Movie Cards Inserted via JS -->
+    </div>
+
+  </main>
+
+  <!-- Site Footer -->
+  <footer class="mt-12 bg-white border-t border-emerald-100 py-6 text-xs text-slate-500">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-3">
+      <div class="flex items-center gap-2">
+        <div class="w-6 h-6 rounded-lg bg-brand-600 text-white flex items-center justify-center text-[10px]">
+          <i class="fa-solid fa-film"></i>
+        </div>
+        <span class="font-bold text-slate-700">CineVault</span>
+        <span>• Emerald & White Movie Poster Gallery</span>
+      </div>
+      <div class="flex items-center gap-4 text-slate-400">
+        <button onclick="openCustomModal()" class="hover:text-brand-600 transition">Customization Page</button>
+        <button onclick="exportCollectionJSON()" class="hover:text-brand-600 transition">Export Backup</button>
+        <button onclick="triggerImportFileInput()" class="hover:text-brand-600 transition">Import JSON</button>
+        <input type="file" id="importFileInput" accept=".json" class="hidden">
+      </div>
+    </div>
+  </footer>
+
+  <!-- MODAL 1: Add / Edit Movie Modal -->
+  <div id="movieModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm hidden opacity-0 transition-opacity duration-200">
+    <div class="bg-white rounded-3xl shadow-2xl border border-emerald-100 w-full max-w-lg overflow-hidden transform scale-95 transition-transform duration-200 max-h-[92vh] flex flex-col">
+      
+      <!-- Modal Header -->
+      <div class="px-6 py-4 bg-gradient-to-r from-emerald-50 via-white to-white border-b border-emerald-100 flex items-center justify-between">
+        <div class="flex items-center gap-2.5">
+          <div class="w-8 h-8 rounded-xl bg-brand-600 text-white flex items-center justify-center text-sm shadow-sm">
+            <i id="modalHeaderIcon" class="fa-solid fa-plus"></i>
+          </div>
+          <div>
+            <h3 id="modalTitle" class="font-display font-bold text-base text-slate-900">Add Movie Poster</h3>
+            <p class="text-[11px] text-slate-500">Enter movie details and upload or paste poster URL</p>
+          </div>
+        </div>
+        <button onclick="closeMovieModal()" class="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-500 flex items-center justify-center transition">
+          <i class="fa-solid fa-xmark text-sm"></i>
+        </button>
+      </div>
+
+      <!-- Modal Body (Scrollable) -->
+      <form id="movieForm" class="p-6 overflow-y-auto space-y-4 flex-1">
+        <input type="hidden" id="movieId">
+
+        <!-- Movie Title -->
+        <div>
+          <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">
+            Movie Title <span class="text-rose-500">*</span>
+          </label>
+          <input 
+            type="text" 
+            id="movieTitleInput" 
+            required 
+            placeholder="e.g. Inception, Interstellar, Dune" 
+            class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 focus:border-brand-500 focus:ring-2 focus:ring-brand-200 text-sm outline-none transition"
+          >
+        </div>
+
+        <!-- Poster Source (File or URL tab) -->
+        <div>
+          <div class="flex items-center justify-between mb-1.5">
+            <label class="text-xs font-bold text-slate-700 uppercase tracking-wider">
+              Movie Poster Image <span class="text-rose-500">*</span>
+            </label>
+            <div class="flex gap-1 bg-slate-100 p-0.5 rounded-lg text-[11px] font-semibold">
+              <button type="button" id="posterSourceUrlBtn" class="px-2.5 py-0.5 rounded-md bg-white text-brand-700 shadow-xs">Image URL</button>
+              <button type="button" id="posterSourceFileBtn" class="px-2.5 py-0.5 rounded-md text-slate-600 hover:text-slate-900">Upload File</button>
+            </div>
+          </div>
+
+          <!-- URL Input Container -->
+          <div id="urlInputContainer">
+            <input 
+              type="url" 
+              id="moviePosterUrl" 
+              placeholder="https://example.com/poster.jpg" 
+              class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 focus:border-brand-500 focus:ring-2 focus:ring-brand-200 text-sm outline-none transition"
+            >
+            <p class="text-[11px] text-slate-400 mt-1">Provide direct image link (JPEG, PNG, WebP) or click "Upload File" to pick from device.</p>
+          </div>
+
+          <!-- File Upload Container -->
+          <div id="fileInputContainer" class="hidden">
+            <label for="posterFileInput" class="border-2 border-dashed border-emerald-300 hover:border-brand-500 bg-emerald-50/40 rounded-2xl p-4 flex flex-col items-center justify-center cursor-pointer transition text-center">
+              <i class="fa-solid fa-cloud-arrow-up text-brand-600 text-2xl mb-1.5"></i>
+              <span class="text-xs font-bold text-slate-700">Choose an image from your device</span>
+              <span class="text-[11px] text-slate-400">PNG, JPG, WebP up to 5MB</span>
+              <input type="file" id="posterFileInput" accept="image/*" class="hidden">
+            </label>
+          </div>
+
+          <!-- Live Poster Image Preview -->
+          <div id="posterPreviewContainer" class="mt-3 hidden items-center gap-3 p-2 rounded-xl bg-slate-50 border border-slate-200">
+            <img id="posterPreviewImg" src="" alt="Preview" class="w-12 h-16 object-cover rounded-lg shadow-xs">
+            <div class="flex-1 overflow-hidden">
+              <span class="text-xs font-semibold text-slate-700 block truncate">Poster Preview Ready</span>
+              <span id="posterPreviewSize" class="text-[10px] text-brand-600 font-medium">Valid image source</span>
+            </div>
+            <button type="button" id="removePosterBtn" class="text-slate-400 hover:text-rose-500 p-1.5 text-xs">
+              <i class="fa-solid fa-trash-can"></i>
+            </button>
+          </div>
+        </div>
+
+        <!-- Release Year & Genre -->
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">
+              Release Year
+            </label>
+            <input 
+              type="number" 
+              id="movieYearInput" 
+              min="1888" 
+              max="2099" 
+              placeholder="e.g. 2024" 
+              class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 focus:border-brand-500 focus:ring-2 focus:ring-brand-200 text-sm outline-none transition"
+            >
+          </div>
+
+          <div>
+            <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">
+              Genre
+            </label>
+            <select id="movieGenreInput" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 focus:border-brand-500 focus:ring-2 focus:ring-brand-200 text-sm outline-none transition bg-white">
+              <option value="Sci-Fi">Sci-Fi</option>
+              <option value="Action">Action</option>
+              <option value="Drama">Drama</option>
+              <option value="Thriller">Thriller</option>
+              <option value="Comedy">Comedy</option>
+              <option value="Horror">Horror</option>
+              <option value="Adventure">Adventure</option>
+              <option value="Animation">Animation</option>
+              <option value="Documentary">Documentary</option>
+              <option value="Fantasy">Fantasy</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Rating & Director -->
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">
+              Rating (1 - 10)
+            </label>
+            <input 
+              type="number" 
+              id="movieRatingInput" 
+              step="0.1" 
+              min="1" 
+              max="10" 
+              placeholder="e.g. 8.8" 
+              class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 focus:border-brand-500 focus:ring-2 focus:ring-brand-200 text-sm outline-none transition"
+            >
+          </div>
+
+          <div>
+            <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">
+              Director
+            </label>
+            <input 
+              type="text" 
+              id="movieDirectorInput" 
+              placeholder="e.g. Christopher Nolan" 
+              class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 focus:border-brand-500 focus:ring-2 focus:ring-brand-200 text-sm outline-none transition"
+            >
+          </div>
+        </div>
+
+        <!-- Upload Date Picker (Allows user to customize/record upload date) -->
+        <div>
+          <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">
+            Uploaded Date
+          </label>
+          <input 
+            type="date" 
+            id="movieUploadDateInput" 
+            class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 focus:border-brand-500 focus:ring-2 focus:ring-brand-200 text-sm outline-none transition"
+          >
+          <p class="text-[11px] text-slate-400 mt-1">Defaults to today's date. Displaying this on poster cards can be toggled in Customization.</p>
+        </div>
+
+        <!-- Synopsis / Note -->
+        <div>
+          <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">
+            Synopsis / Notes (Optional)
+          </label>
+          <textarea 
+            id="movieNotesInput" 
+            rows="2" 
+            placeholder="Short review, synopsis or why you saved this poster..." 
+            class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 focus:border-brand-500 focus:ring-2 focus:ring-brand-200 text-sm outline-none transition resize-none"
+          ></textarea>
+        </div>
+
+      </form>
+
+      <!-- Modal Footer -->
+      <div class="px-6 py-4 bg-slate-50 border-t border-slate-200 flex items-center justify-end gap-3">
+        <button type="button" onclick="closeMovieModal()" class="px-4 py-2 rounded-xl border border-slate-200 text-slate-700 hover:bg-slate-100 text-xs font-semibold transition">
+          Cancel
+        </button>
+        <button type="button" id="saveMovieBtn" class="px-5 py-2 rounded-xl bg-brand-600 hover:bg-brand-700 text-white text-xs font-bold shadow-md shadow-brand-600/30 transition flex items-center gap-2">
+          <i class="fa-solid fa-floppy-disk"></i>
+          <span>Save Movie Poster</span>
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- MODAL 2: Customization Settings Modal (The Customization Page requested) -->
+  <div id="customModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm hidden opacity-0 transition-opacity duration-200">
+    <div class="bg-white rounded-3xl shadow-2xl border border-emerald-100 w-full max-w-md overflow-hidden transform scale-95 transition-transform duration-200 max-h-[90vh] flex flex-col">
+      
+      <!-- Custom Header -->
+      <div class="px-6 py-4 bg-gradient-to-r from-emerald-50 via-white to-white border-b border-emerald-100 flex items-center justify-between">
+        <div class="flex items-center gap-2.5">
+          <div class="w-8 h-8 rounded-xl bg-brand-700 text-white flex items-center justify-center text-sm shadow-sm">
+            <i class="fa-solid fa-sliders"></i>
+          </div>
+          <div>
+            <h3 class="font-display font-bold text-base text-slate-900">Gallery Customization</h3>
+            <p class="text-[11px] text-slate-500">Personalize cards, dates, aspect ratio & count format</p>
+          </div>
+        </div>
+        <button onclick="closeCustomModal()" class="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-500 flex items-center justify-center transition">
+          <i class="fa-solid fa-xmark text-sm"></i>
+        </button>
+      </div>
+
+      <!-- Settings List -->
+      <div class="p-6 overflow-y-auto space-y-5 text-sm flex-1">
+        
+        <!-- Toggle 1: Show or Hide Uploaded Dates (Satisfies "neither with uploaded dates" preference) -->
+        <div class="flex items-center justify-between p-3.5 rounded-2xl bg-emerald-50/50 border border-emerald-100">
+          <div>
+            <div class="font-bold text-slate-800 text-xs flex items-center gap-1.5">
+              <i class="fa-regular fa-calendar text-brand-600"></i> Show Uploaded Dates
+            </div>
+            <p class="text-[11px] text-slate-500 mt-0.5">Toggle off to view posters completely without dates.</p>
+          </div>
+          <label class="relative inline-flex items-center cursor-pointer">
+            <input type="checkbox" id="customShowDates" class="sr-only peer" checked>
+            <div class="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-brand-600"></div>
+          </label>
+        </div>
+
+        <!-- Toggle 2: Show Ratings & Badges -->
+        <div class="flex items-center justify-between p-3.5 rounded-2xl bg-slate-50 border border-slate-100">
+          <div>
+            <div class="font-bold text-slate-800 text-xs flex items-center gap-1.5">
+              <i class="fa-solid fa-star text-amber-500"></i> Show Rating & Genre Badges
+            </div>
+            <p class="text-[11px] text-slate-500 mt-0.5">Display floating star ratings & categories over poster.</p>
+          </div>
+          <label class="relative inline-flex items-center cursor-pointer">
+            <input type="checkbox" id="customShowBadges" class="sr-only peer" checked>
+            <div class="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-brand-600"></div>
+          </label>
+        </div>
+
+        <!-- Option 3: Poster Aspect Ratio -->
+        <div>
+          <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">
+            Poster Aspect Ratio
+          </label>
+          <div class="grid grid-cols-3 gap-2">
+            <button type="button" data-ratio="poster" class="ratio-btn py-2 px-3 rounded-xl border-2 border-brand-500 bg-brand-50 text-brand-800 font-bold text-xs text-center transition">
+              Classic (2:3)
+            </button>
+            <button type="button" data-ratio="square" class="ratio-btn py-2 px-3 rounded-xl border border-slate-200 text-slate-600 hover:bg-slate-50 font-medium text-xs text-center transition">
+              Square (1:1)
+            </button>
+            <button type="button" data-ratio="cinema" class="ratio-btn py-2 px-3 rounded-xl border border-slate-200 text-slate-600 hover:bg-slate-50 font-medium text-xs text-center transition">
+              Cinema (16:9)
+            </button>
+          </div>
+        </div>
+
+        <!-- Option 4: Background Tone Accent -->
+        <div>
+          <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">
+            Green & White Theme Hue
+          </label>
+          <div class="flex items-center gap-3" id="themeHuePicker">
+            <button data-hue="emerald" class="w-8 h-8 rounded-full bg-emerald-600 ring-2 ring-emerald-600 ring-offset-2 transition"></button>
+            <button data-hue="mint" class="w-8 h-8 rounded-full bg-teal-500 ring-2 ring-transparent ring-offset-2 transition"></button>
+            <button data-hue="forest" class="w-8 h-8 rounded-full bg-green-800 ring-2 ring-transparent ring-offset-2 transition"></button>
+            <button data-hue="lime" class="w-8 h-8 rounded-full bg-lime-600 ring-2 ring-transparent ring-offset-2 transition"></button>
+          </div>
+        </div>
+
+        <!-- Option 5: Card Corner Rounding -->
+        <div>
+          <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">
+            Poster Card Border Radius
+          </label>
+          <div class="grid grid-cols-3 gap-2">
+            <button type="button" data-radius="rounded-xl" class="radius-btn py-2 px-3 rounded-xl border border-slate-200 text-slate-600 text-xs font-medium text-center">Compact (12px)</button>
+            <button type="button" data-radius="rounded-2xl" class="radius-btn py-2 px-3 rounded-2xl border-2 border-brand-500 bg-brand-50 text-brand-800 text-xs font-bold text-center">Curved (16px)</button>
+            <button type="button" data-radius="rounded-3xl" class="radius-btn py-2 px-3 rounded-3xl border border-slate-200 text-slate-600 text-xs font-medium text-center">Super (24px)</button>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Custom Footer -->
+      <div class="px-6 py-4 bg-slate-50 border-t border-slate-200 flex items-center justify-between">
+        <button onclick="resetCustomizationDefaults()" class="text-xs font-semibold text-slate-500 hover:text-slate-800">
+          Reset Defaults
+        </button>
+        <button onclick="closeCustomModal()" class="px-5 py-2 rounded-xl bg-brand-600 hover:bg-brand-700 text-white text-xs font-bold shadow-sm transition">
+          Apply & Close
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- MODAL 3: Poster Lightbox Preview & Details -->
+  <div id="lightboxModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md hidden opacity-0 transition-opacity duration-200">
+    <div class="bg-white rounded-3xl shadow-2xl overflow-hidden w-full max-w-3xl max-h-[92vh] flex flex-col md:flex-row transform scale-95 transition-transform duration-200">
+      
+      <!-- Big Poster Preview Image -->
+      <div class="w-full md:w-1/2 bg-slate-950 flex items-center justify-center relative min-h-[300px]">
+        <img id="lightboxImg" src="" alt="Poster" class="w-full h-full object-contain max-h-[500px]">
+        <div class="absolute top-3 right-3 md:hidden">
+          <button onclick="closeLightboxModal()" class="w-8 h-8 rounded-full bg-slate-900/70 text-white flex items-center justify-center backdrop-blur-md">
+            <i class="fa-solid fa-xmark"></i>
+          </button>
+        </div>
+      </div>
+
+      <!-- Details Column -->
+      <div class="w-full md:w-1/2 p-6 flex flex-col justify-between overflow-y-auto">
+        <div>
+          <div class="flex items-center justify-between mb-2">
+            <span id="lightboxGenre" class="px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-[11px] font-bold uppercase tracking-wider border border-emerald-200">
+              Sci-Fi
+            </span>
+            <button onclick="closeLightboxModal()" class="hidden md:flex w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-500 items-center justify-center transition">
+              <i class="fa-solid fa-xmark text-sm"></i>
+            </button>
+          </div>
+
+          <h3 id="lightboxTitle" class="font-display text-2xl font-black text-slate-900 leading-tight mb-2">
+            Movie Title
+          </h3>
+
+          <!-- Details Grid -->
+          <div class="grid grid-cols-2 gap-3 p-3.5 rounded-2xl bg-emerald-50/60 border border-emerald-100 mb-4 text-xs">
+            <div>
+              <span class="text-slate-400 block text-[10px] uppercase font-bold tracking-wider">Release Year</span>
+              <span id="lightboxYear" class="font-bold text-slate-800 text-sm">2024</span>
+            </div>
+            <div>
+              <span class="text-slate-400 block text-[10px] uppercase font-bold tracking-wider">IMDb / Rating</span>
+              <span id="lightboxRating" class="font-bold text-amber-600 text-sm flex items-center gap-1">
+                <i class="fa-solid fa-star text-xs"></i> 8.9
+              </span>
+            </div>
+            <div>
+              <span class="text-slate-400 block text-[10px] uppercase font-bold tracking-wider">Director</span>
+              <span id="lightboxDirector" class="font-semibold text-slate-800">Christopher Nolan</span>
+            </div>
+            <div>
+              <span class="text-slate-400 block text-[10px] uppercase font-bold tracking-wider">Uploaded Date</span>
+              <span id="lightboxUploadDate" class="font-semibold text-brand-700">Oct 2, 2026</span>
+            </div>
+          </div>
+
+          <!-- Synopsis Text -->
+          <div>
+            <h4 class="text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">Notes / Synopsis</h4>
+            <p id="lightboxNotes" class="text-xs text-slate-600 leading-relaxed max-h-32 overflow-y-auto">
+              No additional notes provided for this poster.
+            </p>
+          </div>
+        </div>
+
+        <!-- Action Buttons in Lightbox -->
+        <div class="pt-5 border-t border-slate-100 flex items-center gap-2 mt-4">
+          <button id="lightboxEditBtn" class="flex-1 py-2.5 rounded-xl border border-slate-200 hover:bg-slate-50 text-xs font-bold text-slate-700 transition flex items-center justify-center gap-1.5">
+            <i class="fa-solid fa-pen-to-square"></i> Edit
+          </button>
+          <button id="lightboxDeleteBtn" class="py-2.5 px-4 rounded-xl border border-rose-200 bg-rose-50 hover:bg-rose-100 text-xs font-bold text-rose-700 transition flex items-center justify-center gap-1.5">
+            <i class="fa-solid fa-trash-can"></i> Delete
+          </button>
+        </div>
+
+      </div>
+
+    </div>
+  </div>
+
+  <div id="toast" class="fixed bottom-5 right-5 z-50 flex items-center gap-2.5 bg-slate-900 text-white px-4 py-3 rounded-2xl shadow-xl border border-slate-800 transition-all duration-300 transform translate-y-20 opacity-0 pointer-events-none">
+    <div id="toastIcon" class="w-6 h-6 rounded-lg bg-brand-500 flex items-center justify-center text-xs">
+      <i class="fa-solid fa-check"></i>
+    </div>
+    <span id="toastMsg" class="text-xs font-medium">Action completed successfully.</span>
+  </div>
+
+  <script>
+    // Initial Movie Database with high-quality fallback posters
+    const INITIAL_MOVIES = [
+      {
+        id: 'mv-1',
+        title: 'Interstellar',
+        year: 2014,
+        genre: 'Sci-Fi',
+        director: 'Christopher Nolan',
+        rating: 8.7,
+        posterUrl: 'https://images.unsplash.com/photo-1506703719100-a0f3a48c0f86?w=600&auto=format&fit=crop&q=80',
+        uploadedDate: '2026-09-15',
+        notes: 'Exploration through a wormhole in search of a new home for mankind.'
+      },
+      {
+        id: 'mv-2',
+        title: 'Dune: Part Two',
+        year: 2024,
+        genre: 'Adventure',
+        director: 'Denis Villeneuve',
+        rating: 8.6,
+        posterUrl: 'https://images.unsplash.com/photo-1534447677768-be436bb09401?w=600&auto=format&fit=crop&q=80',
+        uploadedDate: '2026-09-20',
+        notes: 'Paul Atreides unites with Chani and the Fremen to seek revenge against the conspirators.'
+      },
+      {
+        id: 'mv-3',
+        title: 'The Dark Knight',
+        year: 2008,
+        genre: 'Action',
+        director: 'Christopher Nolan',
+        rating: 9.0,
+        posterUrl: 'https://images.unsplash.com/photo-1509198397868-475647b2a1e5?w=600&auto=format&fit=crop&q=80',
+        uploadedDate: '2026-09-22',
+        notes: 'Batman faces the criminal mastermind known as the Joker in Gotham City.'
+      },
+      {
+        id: 'mv-4',
+        title: 'Spirited Away',
+        year: 2001,
+        genre: 'Animation',
+        director: 'Hayao Miyazaki',
+        rating: 8.6,
+        posterUrl: 'https://images.unsplash.com/photo-1578632767115-351597cf2477?w=600&auto=format&fit=crop&q=80',
+        uploadedDate: '2026-09-25',
+        notes: 'A young girl enters an enchanted world ruled by gods, witches, and spirits.'
+      },
+      {
+        id: 'mv-5',
+        title: 'Blade Runner 2049',
+        year: 2017,
+        genre: 'Sci-Fi',
+        director: 'Denis Villeneuve',
+        rating: 8.0,
+        posterUrl: 'https://images.unsplash.com/photo-1518709268805-4e9042af9f23?w=600&auto=format&fit=crop&q=80',
+        uploadedDate: '2026-09-28',
+        notes: 'Young blade runner discovery of a long-buried secret leads him to track down Rick Deckard.'
+      },
+      {
+        id: 'mv-6',
+        title: 'The Grand Budapest Hotel',
+        year: 2014,
+        genre: 'Comedy',
+        director: 'Wes Anderson',
+        rating: 8.1,
+        posterUrl: 'https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?w=600&auto=format&fit=crop&q=80',
+        uploadedDate: '2026-10-01',
+        notes: 'The adventures of Gustave H, a legendary concierge at a famous European hotel.'
+      }
+    ];
+
+    // Application State
+    let movies = [...INITIAL_MOVIES];
+    let customSettings = {
+      showDates: true,             // Can be toggled false ("neither with uploaded dates")
+      showBadges: true,
+      aspectRatio: 'aspect-poster', // aspect-poster, aspect-square, aspect-cinema
+      viewMode: 'grid',            // grid, compact, list
+      cardRadius: 'rounded-2xl',
+      themeHue: 'emerald'
+    };
+
+    let activeGenre = 'ALL';
+    let searchQuery = '';
+    let sortMode = 'uploaded_desc';
+    let currentLightboxMovieId = null;
+
+    // Elements
+    const movieGallery = document.getElementById('movieGallery');
+    const totalPosterCount = document.getElementById('totalPosterCount');
+    const visiblePosterCount = document.getElementById('visiblePosterCount');
+    const totalGenresCount = document.getElementById('totalGenresCount');
+    const heroPosterCount = document.getElementById('heroPosterCount');
+    const heroDateModeStatus = document.getElementById('heroDateModeStatus');
+    const galleryCounterBadge = document.getElementById('galleryCounterBadge');
+    const searchInput = document.getElementById('searchInput');
+    const clearSearchBtn = document.getElementById('clearSearchBtn');
+    const genreFilter = document.getElementById('genreFilter');
+    const sortFilter = document.getElementById('sortFilter');
+    const quickDateToggleBtn = document.getElementById('quickDateToggleBtn');
+    const quickDateText = document.getElementById('quickDateText');
+    const quickDateIcon = document.getElementById('quickDateIcon');
+    const emptyGalleryState = document.getElementById('emptyGalleryState');
+
+    // Modals
+    const movieModal = document.getElementById('movieModal');
+    const customModal = document.getElementById('customModal');
+    const lightboxModal = document.getElementById('lightboxModal');
+    const movieForm = document.getElementById('movieForm');
+
+    // Load persisted state if exists
+    function loadSavedState() {
+      try {
+        const storedMovies = localStorage.getItem('cinevault_movies');
+        if (storedMovies) {
+          movies = JSON.parse(storedMovies);
+        }
+        const storedSettings = localStorage.getItem('cinevault_settings');
+        if (storedSettings) {
+          customSettings = { ...customSettings, ...JSON.parse(storedSettings) };
+        }
+      } catch (err) {
+        console.warn("Could not read local storage", err);
+      }
+    }
+
+    function saveState() {
+      try {
+        localStorage.setItem('cinevault_movies', JSON.stringify(movies));
+        localStorage.setItem('cinevault_settings', JSON.stringify(customSettings));
+      } catch (e) {}
+    }
+
+    function showToast(message, type = 'success') {
+      const toast = document.getElementById('toast');
+      const toastMsg = document.getElementById('toastMsg');
+      const toastIcon = document.getElementById('toastIcon');
+
+      toastMsg.textContent = message;
+      if (type === 'success') {
+        toastIcon.className = 'w-6 h-6 rounded-lg bg-emerald-500 text-white flex items-center justify-center text-xs';
+        toastIcon.innerHTML = '<i class="fa-solid fa-check"></i>';
+      } else {
+        toastIcon.className = 'w-6 h-6 rounded-lg bg-rose-500 text-white flex items-center justify-center text-xs';
+        toastIcon.innerHTML = '<i class="fa-solid fa-circle-exclamation"></i>';
+      }
+
+      toast.classList.remove('translate-y-20', 'opacity-0');
+      toast.classList.add('translate-y-0', 'opacity-100');
+
+      setTimeout(() => {
+        toast.classList.remove('translate-y-0', 'opacity-100');
+        toast.classList.add('translate-y-20', 'opacity-0');
+      }, 3000);
+    }
+
+    function updateStats(filteredCount) {
+      const total = movies.length;
+      totalPosterCount.textContent = total;
+      heroPosterCount.textContent = total;
+      visiblePosterCount.textContent = filteredCount;
+      galleryCounterBadge.textContent = `${filteredCount} ${filteredCount === 1 ? 'Poster' : 'Posters'}`;
+
+      // Unique genres
+      const uniqueGenres = new Set(movies.map(m => m.genre).filter(Boolean));
+      totalGenresCount.textContent = uniqueGenres.size;
+
+      // Date status in hero
+      if (customSettings.showDates) {
+        heroDateModeStatus.innerHTML = '<i class="fa-solid fa-eye text-[11px]"></i> Visible';
+        heroDateModeStatus.className = 'font-semibold text-xs text-emerald-300 mt-1.5 flex items-center justify-center gap-1';
+        quickDateText.textContent = 'Dates: On';
+        quickDateIcon.className = 'fa-regular fa-calendar-check text-brand-600';
+      } else {
+        heroDateModeStatus.innerHTML = '<i class="fa-solid fa-eye-slash text-[11px]"></i> Hidden';
+        heroDateModeStatus.className = 'font-semibold text-xs text-slate-400 mt-1.5 flex items-center justify-center gap-1';
+        quickDateText.textContent = 'Dates: Off';
+        quickDateIcon.className = 'fa-regular fa-calendar-xmark text-slate-400';
+      }
+    }
+
+    // Populate Genre Dropdown
+    function populateGenreOptions() {
+      const currentSelected = genreFilter.value;
+      const genres = Array.from(new Set(movies.map(m => m.genre).filter(Boolean))).sort();
+      
+      let html = '<option value="ALL">All Genres</option>';
+      genres.forEach(g => {
+        html += `<option value="${g}">${g}</option>`;
+      });
+      genreFilter.innerHTML = html;
+      genreFilter.value = genres.includes(currentSelected) ? currentSelected : 'ALL';
+    }
+
+    function getFilteredAndSortedMovies() {
+      let result = [...movies];
+
+      // Filter by genre
+      if (activeGenre !== 'ALL') {
+        result = result.filter(m => m.genre === activeGenre);
+      }
+
+      // Filter by search query
+      if (searchQuery.trim() !== '') {
+        const q = searchQuery.toLowerCase().trim();
+        result = result.filter(m => 
+          (m.title && m.title.toLowerCase().includes(q)) ||
+          (m.director && m.director.toLowerCase().includes(q)) ||
+          (m.genre && m.genre.toLowerCase().includes(q)) ||
+          (m.notes && m.notes.toLowerCase().includes(q))
+        );
+      }
+
+      // Sorting
+      result.sort((a, b) => {
+        if (sortMode === 'uploaded_desc') {
+          return new Date(b.uploadedDate || 0) - new Date(a.uploadedDate || 0);
+        } else if (sortMode === 'uploaded_asc') {
+          return new Date(a.uploadedDate || 0) - new Date(b.uploadedDate || 0);
+        } else if (sortMode === 'title_asc') {
+          return a.title.localeCompare(b.title);
+        } else if (sortMode === 'title_desc') {
+          return b.title.localeCompare(a.title);
+        } else if (sortMode === 'year_desc') {
+          return (b.year || 0) - (a.year || 0);
+        } else if (sortMode === 'rating_desc') {
+          return (b.rating || 0) - (a.rating || 0);
+        }
+        return 0;
+      });
+
+      return result;
+    }
+
+    function renderGallery() {
+      const filtered = getFilteredAndSortedMovies();
+      updateStats(filtered.length);
+
+      if (filtered.length === 0) {
+        movieGallery.innerHTML = '';
+        emptyGalleryState.classList.remove('hidden');
+        return;
+      }
+
+      emptyGalleryState.classList.add('hidden');
+
+      // Adjust grid classes according to view mode
+      if (customSettings.viewMode === 'list') {
+        movieGallery.className = 'flex flex-col gap-3';
+      } else if (customSettings.viewMode === 'compact') {
+        movieGallery.className = 'grid grid-cols-2 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-3';
+      } else {
+        movieGallery.className = 'grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 sm:gap-6';
+      }
+
+      let cardsHtml = '';
+      filtered.forEach(movie => {
+        // Safe formatting for upload date
+        let formattedDate = 'N/A';
+        if (movie.uploadedDate) {
+          try {
+            const d = new Date(movie.uploadedDate + 'T00:00:00');
+            formattedDate = d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+          } catch(e) {
+            formattedDate = movie.uploadedDate;
+          }
+        }
+
+        // List View Layout
+        if (customSettings.viewMode === 'list') {
+          cardsHtml += `
+            <div class="bg-white ${customSettings.cardRadius} p-3 border border-emerald-100 shadow-sm hover:shadow-md hover:border-emerald-300 flex items-center justify-between gap-4 transition group">
+              <div class="flex items-center gap-3.5 flex-1 min-w-0">
+                <img 
+                  src="${movie.posterUrl}" 
+                  alt="${movie.title}" 
+                  class="w-12 h-16 object-cover rounded-xl shadow-xs cursor-pointer"
+                  onerror="this.src='https://placehold.co/300x450/064e3b/ffffff?text=${encodeURIComponent(movie.title)}'"
+                  onclick="openLightbox('${movie.id}')"
+                >
+                <div class="min-w-0 flex-1">
+                  <div class="flex items-center gap-2">
+                    <h4 onclick="openLightbox('${movie.id}')" class="font-display font-bold text-sm text-slate-800 truncate hover:text-brand-600 cursor-pointer">
+                      ${movie.title}
+                    </h4>
+                    <span class="text-xs text-slate-400 font-medium">(${movie.year || 'N/A'})</span>
+                  </div>
+                  <div class="flex items-center gap-2 text-[11px] text-slate-500 mt-0.5">
+                    <span class="px-2 py-0.2 rounded-full bg-emerald-50 text-emerald-800 border border-emerald-200/80 font-semibold">${movie.genre || 'Film'}</span>
+                    ${movie.director ? `<span>Dir: ${movie.director}</span>` : ''}
+                    ${customSettings.showDates ? `<span class="text-slate-400">• Uploaded: <strong class="text-emerald-700">${formattedDate}</strong></span>` : ''}
+                  </div>
+                </div>
+              </div>
+
+              <div class="flex items-center gap-2">
+                ${movie.rating ? `
+                  <div class="flex items-center gap-1 text-amber-500 font-bold text-xs bg-amber-50 px-2 py-1 rounded-lg border border-amber-200">
+                    <i class="fa-solid fa-star text-[10px]"></i> ${movie.rating}
+                  </div>
+                ` : ''}
+                <button onclick="editMovie('${movie.id}')" class="p-2 rounded-xl text-slate-400 hover:text-brand-600 hover:bg-emerald-50 transition" title="Edit">
+                  <i class="fa-solid fa-pen-to-square text-xs"></i>
+                </button>
+                <button onclick="deleteMovie('${movie.id}')" class="p-2 rounded-xl text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition" title="Delete">
+                  <i class="fa-solid fa-trash-can text-xs"></i>
+                </button>
+              </div>
+            </div>
+          `;
+          return;
+        }
+
+        // Standard & Compact Grid Cards
+        cardsHtml += `
+          <div class="poster-card group relative bg-white ${customSettings.cardRadius} border border-emerald-100 shadow-sm hover:shadow-xl hover:border-emerald-300 overflow-hidden flex flex-col">
+            
+            <!-- Poster Image Container -->
+            <div class="relative w-full ${customSettings.aspectRatio} bg-slate-900 overflow-hidden cursor-pointer" onclick="openLightbox('${movie.id}')">
+              <img 
+                src="${movie.posterUrl}" 
+                alt="${movie.title}" 
+                class="w-full h-full object-cover transition duration-500 group-hover:scale-105"
+                onerror="this.src='https://placehold.co/400x600/064e3b/ffffff?text=${encodeURIComponent(movie.title)}'"
+                loading="lazy"
+              >
+              
+              <!-- Subtle Image Gradient for text contrast -->
+              <div class="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-transparent to-black/20 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col justify-between p-3">
+                <div class="flex justify-end gap-1.5">
+                  <button 
+                    type="button" 
+                    onclick="event.stopPropagation(); editMovie('${movie.id}')" 
+                    class="w-7 h-7 rounded-full bg-white/90 text-slate-700 hover:bg-white hover:text-brand-600 flex items-center justify-center text-xs shadow-md transition"
+                    title="Edit Movie"
+                  >
+                    <i class="fa-solid fa-pen"></i>
+                  </button>
+                  <button 
+                    type="button" 
+                    onclick="event.stopPropagation(); deleteMovie('${movie.id}')" 
+                    class="w-7 h-7 rounded-full bg-white/90 text-rose-600 hover:bg-rose-600 hover:text-white flex items-center justify-center text-xs shadow-md transition"
+                    title="Delete Poster"
+                  >
+                    <i class="fa-solid fa-trash"></i>
+                  </button>
+                </div>
+
+                <div class="text-white text-xs flex items-center justify-center gap-1 font-semibold py-1 px-2 rounded-xl bg-white/20 backdrop-blur-md">
+                  <i class="fa-solid fa-up-right-and-down-left-from-center text-[10px]"></i> View Poster
+                </div>
+              </div>
+
+              <!-- Top Left Floating Badges (Rating / Genre) -->
+              ${customSettings.showBadges ? `
+                <div class="absolute top-2.5 left-2.5 flex flex-col gap-1 pointer-events-none">
+                  ${movie.rating ? `
+                    <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-slate-900/80 backdrop-blur-md text-amber-400 font-extrabold text-[11px] shadow-sm">
+                      <i class="fa-solid fa-star text-[9px]"></i> ${movie.rating}
+                    </span>
+                  ` : ''}
+                  <span class="inline-flex px-2 py-0.5 rounded-md bg-emerald-950/80 backdrop-blur-md text-emerald-200 text-[10px] font-semibold tracking-wide">
+                    ${movie.genre || 'Movie'}
+                  </span>
+                </div>
+              ` : ''}
+
+              <!-- Uploaded Date Badge (If toggled ON via Customization) -->
+              ${customSettings.showDates ? `
+                <div class="absolute bottom-2 left-2 right-2 flex items-center justify-between text-[10px] font-medium text-emerald-100 bg-slate-950/70 backdrop-blur-md px-2 py-1 rounded-lg pointer-events-none">
+                  <span class="flex items-center gap-1">
+                    <i class="fa-regular fa-clock text-[9px] text-emerald-400"></i> ${formattedDate}
+                  </span>
+                  ${movie.year ? `<span class="text-slate-300 font-bold">${movie.year}</span>` : ''}
+                </div>
+              ` : ''}
+            </div>
+
+            <!-- Card Bottom Information -->
+            <div class="p-3 bg-white flex-1 flex flex-col justify-between">
+              <div>
+                <h4 
+                  onclick="openLightbox('${movie.id}')" 
+                  class="font-display font-bold text-xs sm:text-sm text-slate-800 line-clamp-1 hover:text-brand-600 transition cursor-pointer"
+                  title="${movie.title}"
+                >
+                  ${movie.title}
+                </h4>
+                
+                <div class="flex items-center justify-between mt-1 text-[11px] text-slate-400">
+                  <span class="truncate">${movie.director || 'Cinema Collection'}</span>
+                  ${(!customSettings.showDates && movie.year) ? `<span class="font-bold text-slate-600">${movie.year}</span>` : ''}
+                </div>
+              </div>
+
+              <!-- Quick action foot -->
+              <div class="mt-2.5 pt-2 border-t border-slate-100 flex items-center justify-between text-[11px]">
+                <button onclick="openLightbox('${movie.id}')" class="text-brand-600 hover:text-brand-800 font-semibold flex items-center gap-1">
+                  Details <i class="fa-solid fa-chevron-right text-[8px]"></i>
+                </button>
+                <div class="flex items-center gap-1.5 text-slate-300">
+                  <i class="fa-solid fa-image text-[10px]"></i>
+                </div>
+              </div>
+            </div>
+
+          </div>
+        `;
+      });
+
+      movieGallery.innerHTML = cardsHtml;
+    }
+
+    function openAddMovieModal() {
+      document.getElementById('modalTitle').textContent = 'Add New Movie Poster';
+      document.getElementById('modalHeaderIcon').className = 'fa-solid fa-plus';
+      document.getElementById('movieId').value = '';
+      movieForm.reset();
+
+      // Set default upload date to current local date
+      const today = new Date().toISOString().split('T')[0];
+      document.getElementById('movieUploadDateInput').value = today;
+
+      // Clear preview
+      document.getElementById('posterPreviewContainer').classList.add('hidden');
+      document.getElementById('posterPreviewContainer').classList.remove('flex');
+
+      // Default URL mode
+      switchPosterSourceMode('url');
+
+      movieModal.classList.remove('hidden');
+      setTimeout(() => {
+        movieModal.classList.remove('opacity-0');
+        movieModal.firstElementChild.classList.remove('scale-95');
+      }, 10);
+    }
+
+    function editMovie(id) {
+      const movie = movies.find(m => m.id === id);
+      if (!movie) return;
+
+      closeLightboxModal();
+
+      document.getElementById('modalTitle').textContent = 'Edit Movie Poster';
+      document.getElementById('modalHeaderIcon').className = 'fa-solid fa-pen';
+      document.getElementById('movieId').value = movie.id;
+      document.getElementById('movieTitleInput').value = movie.title || '';
+      document.getElementById('movieYearInput').value = movie.year || '';
+      document.getElementById('movieGenreInput').value = movie.genre || 'Sci-Fi';
+      document.getElementById('movieRatingInput').value = movie.rating || '';
+      document.getElementById('movieDirectorInput').value = movie.director || '';
+      document.getElementById('movieUploadDateInput').value = movie.uploadedDate || '';
+      document.getElementById('movieNotesInput').value = movie.notes || '';
+
+      // Poster preview
+      const previewImg = document.getElementById('posterPreviewImg');
+      previewImg.src = movie.posterUrl || '';
+      document.getElementById('posterPreviewSize').textContent = 'Active Poster';
+      document.getElementById('posterPreviewContainer').classList.remove('hidden');
+      document.getElementById('posterPreviewContainer').classList.add('flex');
+
+      document.getElementById('moviePosterUrl').value = movie.posterUrl || '';
+      switchPosterSourceMode('url');
+
+      movieModal.classList.remove('hidden');
+      setTimeout(() => {
+        movieModal.classList.remove('opacity-0');
+        movieModal.firstElementChild.classList.remove('scale-95');
+      }, 10);
+    }
+
+    function closeMovieModal() {
+      movieModal.classList.add('opacity-0');
+      movieModal.firstElementChild.classList.add('scale-95');
+      setTimeout(() => {
+        movieModal.classList.add('hidden');
+      }, 200);
+    }
+
+    function openLightbox(id) {
+      const movie = movies.find(m => m.id === id);
+      if (!movie) return;
+
+      currentLightboxMovieId = movie.id;
+
+      document.getElementById('lightboxImg').src = movie.posterUrl;
+      document.getElementById('lightboxTitle').textContent = movie.title;
+      document.getElementById('lightboxGenre').textContent = movie.genre || 'Film';
+      document.getElementById('lightboxYear').textContent = movie.year || 'Unknown';
+      document.getElementById('lightboxRating').innerHTML = movie.rating 
+        ? `<i class="fa-solid fa-star text-amber-500"></i> ${movie.rating}` 
+        : 'Not Rated';
+      document.getElementById('lightboxDirector').textContent = movie.director || 'N/A';
+      document.getElementById('lightboxUploadDate').textContent = movie.uploadedDate || 'N/A';
+      document.getElementById('lightboxNotes').textContent = movie.notes || 'No extra notes provided for this film.';
+
+      lightboxModal.classList.remove('hidden');
+      setTimeout(() => {
+        lightboxModal.classList.remove('opacity-0');
+        lightboxModal.firstElementChild.classList.remove('scale-95');
+      }, 10);
+    }
+
+    function closeLightboxModal() {
+      lightboxModal.classList.add('opacity-0');
+      lightboxModal.firstElementChild.classList.add('scale-95');
+      setTimeout(() => {
+        lightboxModal.classList.add('hidden');
+      }, 200);
+    }
+
+    function deleteMovie(id) {
+      const index = movies.findIndex(m => m.id === id);
+      if (index === -1) return;
+      const title = movies[index].title;
+      movies.splice(index, 1);
+      saveState();
+      populateGenreOptions();
+      renderGallery();
+      showToast(`Removed "${title}" from vault.`);
+      closeLightboxModal();
+    }
+
+    // Save Movie Handler
+    document.getElementById('saveMovieBtn').addEventListener('click', () => {
+      const id = document.getElementById('movieId').value;
+      const title = document.getElementById('movieTitleInput').value.trim();
+      const posterUrl = document.getElementById('moviePosterUrl').value.trim() || document.getElementById('posterPreviewImg').src;
+      const year = parseInt(document.getElementById('movieYearInput').value, 10) || null;
+      const genre = document.getElementById('movieGenreInput').value;
+      const rating = parseFloat(document.getElementById('movieRatingInput').value) || null;
+      const director = document.getElementById('movieDirectorInput').value.trim();
+      const uploadedDate = document.getElementById('movieUploadDateInput').value || new Date().toISOString().split('T')[0];
+      const notes = document.getElementById('movieNotesInput').value.trim();
+
+      if (!title) {
+        showToast("Please provide a movie title.", "error");
+        document.getElementById('movieTitleInput').focus();
+        return;
+      }
+
+      if (!posterUrl) {
+        showToast("Please specify a poster URL or upload an image.", "error");
+        return;
+      }
+
+      if (id) {
+        // Update existing
+        const idx = movies.findIndex(m => m.id === id);
+        if (idx !== -1) {
+          movies[idx] = {
+            ...movies[idx],
+            title,
+            posterUrl,
+            year,
+            genre,
+            rating,
+            director,
+            uploadedDate,
+            notes
+          };
+          showToast(`Updated "${title}" successfully.`);
+        }
+      } else {
+        // Create new
+        const newMovie = {
+          id: 'mv-' + Date.now(),
+          title,
+          posterUrl,
+          year,
+          genre,
+          rating,
+          director,
+          uploadedDate,
+          notes
+        };
+        movies.unshift(newMovie);
+        showToast(`Saved "${title}" to your gallery!`);
+      }
+
+      saveState();
+      populateGenreOptions();
+      renderGallery();
+      closeMovieModal();
+    });
+
+    function switchPosterSourceMode(mode) {
+      const urlContainer = document.getElementById('urlInputContainer');
+      const fileContainer = document.getElementById('fileInputContainer');
+      const urlBtn = document.getElementById('posterSourceUrlBtn');
+      const fileBtn = document.getElementById('posterSourceFileBtn');
+
+      if (mode === 'url') {
+        urlContainer.classList.remove('hidden');
+        fileContainer.classList.add('hidden');
+        urlBtn.className = 'px-2.5 py-0.5 rounded-md bg-white text-brand-700 shadow-xs font-bold';
+        fileBtn.className = 'px-2.5 py-0.5 rounded-md text-slate-600 hover:text-slate-900 font-medium';
+      } else {
+        urlContainer.classList.add('hidden');
+        fileContainer.classList.remove('hidden');
+        fileBtn.className = 'px-2.5 py-0.5 rounded-md bg-white text-brand-700 shadow-xs font-bold';
+        urlBtn.className = 'px-2.5 py-0.5 rounded-md text-slate-600 hover:text-slate-900 font-medium';
+      }
+    }
+
+    document.getElementById('posterSourceUrlBtn').addEventListener('click', () => switchPosterSourceMode('url'));
+    document.getElementById('posterSourceFileBtn').addEventListener('click', () => switchPosterSourceMode('file'));
+
+    // Handle Local File Reading
+    const posterFileInput = document.getElementById('posterFileInput');
+    posterFileInput.addEventListener('change', (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = function(evt) {
+        const dataUrl = evt.target.result;
+        document.getElementById('posterPreviewImg').src = dataUrl;
+        document.getElementById('moviePosterUrl').value = dataUrl;
+        document.getElementById('posterPreviewSize').textContent = `${(file.size / 1024).toFixed(1)} KB uploaded`;
+        document.getElementById('posterPreviewContainer').classList.remove('hidden');
+        document.getElementById('posterPreviewContainer').classList.add('flex');
+      };
+      reader.readAsDataURL(file);
+    });
+
+    // URL input live change
+    document.getElementById('moviePosterUrl').addEventListener('input', (e) => {
+      const url = e.target.value.trim();
+      if (url) {
+        document.getElementById('posterPreviewImg').src = url;
+        document.getElementById('posterPreviewSize').textContent = 'Direct Web Link';
+        document.getElementById('posterPreviewContainer').classList.remove('hidden');
+        document.getElementById('posterPreviewContainer').classList.add('flex');
+      }
+    });
+
+    document.getElementById('removePosterBtn').addEventListener('click', () => {
+      document.getElementById('moviePosterUrl').value = '';
+      posterFileInput.value = '';
+      document.getElementById('posterPreviewContainer').classList.add('hidden');
+      document.getElementById('posterPreviewContainer').classList.remove('flex');
+    });
+
+    function openCustomModal() {
+      // Sync form with current settings
+      document.getElementById('customShowDates').checked = customSettings.showDates;
+      document.getElementById('customShowBadges').checked = customSettings.showBadges;
+      
+      // Sync ratio buttons
+      document.querySelectorAll('.ratio-btn').forEach(btn => {
+        if (btn.dataset.ratio === customSettings.aspectRatio.replace('aspect-', '')) {
+          btn.className = 'ratio-btn py-2 px-3 rounded-xl border-2 border-brand-500 bg-brand-50 text-brand-800 font-bold text-xs text-center transition';
+        } else {
+          btn.className = 'ratio-btn py-2 px-3 rounded-xl border border-slate-200 text-slate-600 hover:bg-slate-50 font-medium text-xs text-center transition';
+        }
+      });
+
+      customModal.classList.remove('hidden');
+      setTimeout(() => {
+        customModal.classList.remove('opacity-0');
+        customModal.firstElementChild.classList.remove('scale-95');
+      }, 10);
+    }
+
+    function closeCustomModal() {
+      customModal.classList.add('opacity-0');
+      customModal.firstElementChild.classList.add('scale-95');
+      setTimeout(() => {
+        customModal.classList.add('hidden');
+      }, 200);
+    }
+
+    // Toggle Dates (Both inside custom modal and quick toggle button)
+    document.getElementById('customShowDates').addEventListener('change', (e) => {
+      customSettings.showDates = e.target.checked;
+      saveState();
+      renderGallery();
+    });
+
+    quickDateToggleBtn.addEventListener('click', () => {
+      customSettings.showDates = !customSettings.showDates;
+      saveState();
+      renderGallery();
+      showToast(customSettings.showDates ? "Uploaded dates are now VISIBLE" : "Uploaded dates are now HIDDEN");
+    });
+
+    document.getElementById('customShowBadges').addEventListener('change', (e) => {
+      customSettings.showBadges = e.target.checked;
+      saveState();
+      renderGallery();
+    });
+
+    // Aspect Ratio options
+    document.querySelectorAll('.ratio-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.ratio-btn').forEach(b => {
+          b.className = 'ratio-btn py-2 px-3 rounded-xl border border-slate-200 text-slate-600 hover:bg-slate-50 font-medium text-xs text-center transition';
+        });
+        btn.className = 'ratio-btn py-2 px-3 rounded-xl border-2 border-brand-500 bg-brand-50 text-brand-800 font-bold text-xs text-center transition';
+        customSettings.aspectRatio = 'aspect-' + btn.dataset.ratio;
+        saveState();
+        renderGallery();
+      });
+    });
+
+    // Radius options
+    document.querySelectorAll('.radius-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.radius-btn').forEach(b => {
+          b.classList.remove('border-2', 'border-brand-500', 'bg-brand-50', 'text-brand-800', 'font-bold');
+          b.classList.add('border', 'border-slate-200', 'text-slate-600', 'font-medium');
+        });
+        btn.classList.add('border-2', 'border-brand-500', 'bg-brand-50', 'text-brand-800', 'font-bold');
+        customSettings.cardRadius = btn.dataset.radius;
+        saveState();
+        renderGallery();
+      });
+    });
+
+    function resetCustomizationDefaults() {
+      customSettings = {
+        showDates: true,
+        showBadges: true,
+        aspectRatio: 'aspect-poster',
+        viewMode: 'grid',
+        cardRadius: 'rounded-2xl',
+        themeHue: 'emerald'
+      };
+      saveState();
+      openCustomModal();
+      renderGallery();
+      showToast("Customization reset to default.");
+    }
+
+    // View Switchers
+    document.getElementById('viewGridBtn').addEventListener('click', () => setViewMode('grid'));
+    document.getElementById('viewCompactBtn').addEventListener('click', () => setViewMode('compact'));
+    document.getElementById('viewListBtn').addEventListener('click', () => setViewMode('list'));
+
+    function setViewMode(mode) {
+      customSettings.viewMode = mode;
+      const bGrid = document.getElementById('viewGridBtn');
+      const bComp = document.getElementById('viewCompactBtn');
+      const bList = document.getElementById('viewListBtn');
+
+      [bGrid, bComp, bList].forEach(b => {
+        b.className = 'px-2.5 py-1 rounded-lg text-xs font-semibold text-slate-500 hover:text-slate-900 transition';
+      });
+
+      if (mode === 'grid') bGrid.className = 'px-2.5 py-1 rounded-lg text-xs font-semibold bg-white text-slate-900 shadow-xs transition';
+      if (mode === 'compact') bComp.className = 'px-2.5 py-1 rounded-lg text-xs font-semibold bg-white text-slate-900 shadow-xs transition';
+      if (mode === 'list') bList.className = 'px-2.5 py-1 rounded-lg text-xs font-semibold bg-white text-slate-900 shadow-xs transition';
+
+      saveState();
+      renderGallery();
+    }
+
+    // Lightbox Edit / Delete actions
+    document.getElementById('lightboxEditBtn').addEventListener('click', () => {
+      if (currentLightboxMovieId) editMovie(currentLightboxMovieId);
+    });
+
+    document.getElementById('lightboxDeleteBtn').addEventListener('click', () => {
+      if (currentLightboxMovieId) deleteMovie(currentLightboxMovieId);
+    });
+
+    searchInput.addEventListener('input', (e) => {
+      searchQuery = e.target.value;
+      if (searchQuery.length > 0) {
+        clearSearchBtn.classList.remove('hidden');
+      } else {
+        clearSearchBtn.classList.add('hidden');
+      }
+      renderGallery();
+    });
+
+    clearSearchBtn.addEventListener('click', () => {
+      searchInput.value = '';
+      searchQuery = '';
+      clearSearchBtn.classList.add('hidden');
+      renderGallery();
+    });
+
+    genreFilter.addEventListener('change', (e) => {
+      activeGenre = e.target.value;
+      renderGallery();
+    });
+
+    sortFilter.addEventListener('change', (e) => {
+      sortMode = e.target.value;
+      renderGallery();
+    });
+
+    function resetAllFilters() {
+      searchInput.value = '';
+      searchQuery = '';
+      activeGenre = 'ALL';
+      genreFilter.value = 'ALL';
+      sortMode = 'uploaded_desc';
+      sortFilter.value = 'uploaded_desc';
+      clearSearchBtn.classList.add('hidden');
+      renderGallery();
+    }
+
+    document.getElementById('resetFiltersBtn').addEventListener('click', resetAllFilters);
+
+    // Modal Trigger Listeners
+    document.getElementById('openAddModalBtn').addEventListener('click', openAddMovieModal);
+    document.getElementById('mobileAddBtn').addEventListener('click', openAddMovieModal);
+    document.getElementById('openCustomModalBtn').addEventListener('click', openCustomModal);
+    document.getElementById('mobileCustomBtn').addEventListener('click', openCustomModal);
+
+    // Close on escape key
+    window.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') {
+        closeMovieModal();
+        closeCustomModal();
+        closeLightboxModal();
+      }
+    });
+
+    function exportCollectionJSON() {
+      const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(movies, null, 2));
+      const downloadAnchor = document.createElement('a');
+      downloadAnchor.setAttribute("href", dataStr);
+      downloadAnchor.setAttribute("download", `cinevault_posters_backup_${new Date().toISOString().slice(0, 10)}.json`);
+      document.body.appendChild(downloadAnchor);
+      downloadAnchor.click();
+      downloadAnchor.remove();
+      showToast("Gallery exported as JSON backup.");
+    }
+
+    function triggerImportFileInput() {
+      document.getElementById('importFileInput').click();
+    }
+
+    document.getElementById('importFileInput').addEventListener('change', (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = function(evt) {
+        try {
+          const parsed = JSON.parse(evt.target.result);
+          if (Array.isArray(parsed)) {
+            movies = parsed;
+            saveState();
+            populateGenreOptions();
+            renderGallery();
+            showToast(`Imported ${parsed.length} posters successfully!`);
+          } else {
+            showToast("Invalid JSON file format.", "error");
+          }
+        } catch (err) {
+          showToast("Failed to parse backup JSON file.", "error");
+        }
+      };
+      reader.readAsText(file);
+    });
+
+    window.onload = function() {
+      loadSavedState();
+      populateGenreOptions();
+      renderGallery();
+    };
+  </script>
+</body>
+</html>
